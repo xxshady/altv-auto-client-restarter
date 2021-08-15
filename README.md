@@ -37,5 +37,5 @@ npm run start
 ```
 yarn run start
 ```
-Demonstration of the immediate termination of alt:V and gta using ctrl+c and " re " command
+Demonstration of the immediate termination of alt:V and gta using ctrl+c and restart using `re` command
 https://imgur.com/a/iX32MKx
