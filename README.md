@@ -2,6 +2,11 @@
 
 This is a tool for automatic full restart of the alt:V client and game due to the crash or during modding process
 
+Short demo of the immediate termination of alt:V and gta using ctrl+c and restart using `re` command
+[![youtube](http://img.youtube.com/vi/EB11J1sAYRw/0.jpg)](http://www.youtube.com/watch?v=EB11J1sAYRw)
+
+Full demo with auto restart on game crash
+https://youtu.be/EB11J1sAYRw
 
 # Installation
 
@@ -37,5 +42,3 @@ npm run start
 ```
 yarn run start
 ```
-Demonstration of the immediate termination of alt:V and gta using ctrl+c and restart using `re` command
-https://imgur.com/a/iX32MKx
