@@ -5,7 +5,7 @@ import { Tail } from 'tail'
 import { config } from './config-reader'
 import { syncReaddirSortTime, waitAsync, waitForAsync } from './utils'
 
-const altGameCrashLogString = 'MINUDUMP.'
+const altGameCrashLogString = 'MINIDUMP.'
 const altvPath = config.altvPath
 const altvArgs = [
   config.connectUrl ? `-connecturl altv://connect/${config.connectUrl}` : null,
