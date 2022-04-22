@@ -4,7 +4,7 @@
  * @type {IUserConfig}
  */
 const config = {
-  altvPath: 'C:\\Program Files\\altv-release-client',
+  altvPath: 'C:/altv',
   connectUrl: '127.0.0.1:7788',
   skipAltvUpdate: true,
   /**
@@ -13,7 +13,7 @@ const config = {
    */
   restartGameDelay: 700,
 
-  restartOnGameCrash: false,
+  restartOnGameCrash: true,
   /**
    * the same as `restartGameDelay` but for game crash (when crash occurs game needs more time to restart)
    */
@@ -21,7 +21,7 @@ const config = {
   /**
    * if you closes running script or presses ctrl+c its automatically closes altv and gta
    */
-  closeAltvOnExitScript: false,
+  closeAltvOnExitScript: true,
 }
 
 export default config

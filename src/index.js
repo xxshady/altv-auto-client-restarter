@@ -149,10 +149,12 @@ async function watchGameCrash () {
   }
 
   // console.log('start watch last client log:', logToWatch)
-
+  let crashed = false
   const clientLogWatcher = new Tail(`${altvLogsPath}\\${logToWatch}`)
     .on('line', (data) => {
+      if (crashed) return
       if (!data.includes(altGameCrashLogString)) return
+      crashed = true
 
       clientLogWatcher.unwatch()
 
