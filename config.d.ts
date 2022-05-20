@@ -4,6 +4,7 @@ interface IUserConfig {
   skipAltvUpdate?: boolean,
   restartGameDelay?: number,
   restartOnGameCrash?: boolean,
+  restartOnDisconnect?: boolean
   restartOnGameCrashDelay?: number
   closeAltvOnExitScript?: boolean,
 }

@@ -14,6 +14,7 @@ const defaultValues = {
   skipAltvUpdate: true,
   restartGameDelay: 700,
   restartOnGameCrash: true,
+  restartOnDisconnect: false,
   closeAltvOnExitScript: false,
   restartOnGameCrashDelay: 1500,
 }

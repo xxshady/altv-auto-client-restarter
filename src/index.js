@@ -5,7 +5,12 @@ import { Tail } from 'tail'
 import { config } from './config-reader'
 import { syncReaddirSortTime, waitAsync, waitForAsync } from './utils'
 
-const altGameCrashLogString = 'MINIDUMP:'
+const altLogStrings = {
+  gameCrash: '] Crash call stack:',
+  resourceStopped: '] Stopped resource',
+  clientDisconnected: '] Disconnected',
+}
+
 const altvPath = config.altvPath
 const altvArgs = [
   config.connectUrl ? `-connecturl altv://connect/${config.connectUrl}` : null,
@@ -35,14 +40,15 @@ function startAltv () {
   const args = altvArgs.filter(v => typeof v === 'string')
   console.log('spawn altv.exe args:', args)
 
+  stopWatchForRestart()
+
   spawnAltv({
     args,
-    onExit: config.restartOnGameCrash ? watchGameCrash : null,
+    onExit: (config.restartOnGameCrash || config.restartOnDisconnect) ? watchForRestart : null,
   })
 }
 
 function spawnAltv (spawnProcessOptions) {
-  console.log('spawn altv.exe...')
   spawnProcess(`${altvPath}\\altv.exe`, spawnProcessOptions)
 }
 
@@ -78,7 +84,6 @@ function closeAltv () {
     }
 
     function failKill (info) {
-      // console.log('fail kill:'.red, info)
       resolve()
     }
   })
@@ -107,9 +112,9 @@ function spawnProcess (path, { args = [], onExit }) {
   })
 
   ps.on('close', (code) => {
-    if (code !== 0) {
-      logProcess(`exited with code ${code}`)
-    }
+    // if (code !== 0) {
+    //   logProcess(`exited with code ${code}`)
+    // }
 
     onExit?.()
   })
@@ -129,17 +134,16 @@ function isProcessRunning (name) {
   })
 }
 
-async function watchGameCrash () {
-  console.log('start wait for gta5.exe...')
+async function watchForRestart () {
+  console.log('start wait for restart...')
 
   const result = await waitForAsync(() => isProcessRunning('gta5.exe'), 60_000)
-
-  if (!result) return console.error('failed to wait gta5.exe')
-
-  // console.log('gta5.exe launched, check altv client log...')
+  if (!result) {
+    console.error('failed to wait gta5.exe')
+    return
+  }
 
   const altvLogsPath = `${altvPath}\\logs`
-
   const files = syncReaddirSortTime(altvLogsPath)
   const logToWatch = getLastClientLogFileName()
 
@@ -148,19 +152,35 @@ async function watchGameCrash () {
     return
   }
 
-  // console.log('start watch last client log:', logToWatch)
-  let crashed = false
-  const clientLogWatcher = new Tail(`${altvLogsPath}\\${logToWatch}`)
+  let unwatched = false
+  /**
+   * @param {number} delay
+   */
+  const restart = (delay) => {
+    // eslint-disable-next-line no-use-before-define
+    stopWatchForRestart()
+    programRestart(delay)
+  }
+
+  const clientLogWatcher = new Tail(`${altvLogsPath}\\${logToWatch}`, { useWatchFile: true })
     .on('line', (data) => {
-      if (crashed) return
-      if (!data.includes(altGameCrashLogString)) return
-      crashed = true
+      if (unwatched) return
 
-      clientLogWatcher.unwatch()
+      if (gameCrashed(data)) {
+        console.log('game crash detected -> restart game'.yellow)
+        restart(config.restartOnGameCrashDelay)
+      }
 
-      console.log('game crash detected -> restart game'.yellow)
-      programRestart(config.restartOnGameCrashDelay)
+      if (clientDisconnected(data)) {
+        console.log('client disconnected -> restart game'.yellow)
+        restart(config.restartGameDelay)
+      }
     })
+
+  watchForRestart.stop = () => {
+    clientLogWatcher.unwatch()
+    unwatched = true
+  }
 
   function getLastClientLogFileName () {
     let fileName
@@ -171,6 +191,31 @@ async function watchGameCrash () {
     }
     return fileName
   }
+
+  function gameCrashed (data) {
+    if (data.includes(altLogStrings.gameCrash)) return true
+    return false
+  }
+
+  function clientDisconnected (data) {
+    if (
+      clientDisconnected.altAnyResourceStopped
+    ) {
+      if (data.includes(altLogStrings.clientDisconnected)) return true
+    }
+
+    if (data.includes(altLogStrings.resourceStopped)) {
+      clientDisconnected.altAnyResourceStopped = true
+    }
+
+    return false
+  }
+  clientDisconnected.altAnyResourceStopped = false
+}
+watchForRestart.stop = () => {}
+
+function stopWatchForRestart () {
+  watchForRestart.stop?.()
 }
 
 function startCommandsReader () {

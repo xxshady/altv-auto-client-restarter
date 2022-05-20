@@ -15,6 +15,10 @@ const config = {
 
   restartOnGameCrash: true,
   /**
+   * for delay uses {@link config.restartGameDelay}
+   */
+  restartOnDisconnect: false,
+  /**
    * the same as `restartGameDelay` but for game crash (when crash occurs game needs more time to restart)
    */
   restartOnGameCrashDelay: 1500,
