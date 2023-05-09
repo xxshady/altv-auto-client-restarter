@@ -1,8 +1,5 @@
 import fs from 'fs'
 
-export const waitAsync = (ms) =>
-  new Promise(resolve => setTimeout(resolve, ms))
-
 export const waitForAsync = async (
   cb,
   maxWaitMs = 5000,

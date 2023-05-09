@@ -12,11 +12,10 @@ const defaultValues = {
   altvPath: null,
   connectUrl: '127.0.0.1:7788',
   skipAltvUpdate: true,
-  restartGameDelay: 700,
   restartOnGameCrash: true,
   restartOnDisconnect: false,
   closeAltvOnExitScript: false,
-  restartOnGameCrashDelay: 1500,
+  skipProcessConfirmation: true,
 }
 
 export const config = readConfig(inputConfig)

@@ -3,7 +3,7 @@ import 'colors'
 import readline from 'readline'
 import { Tail } from 'tail'
 import { config } from './config-reader'
-import { syncReaddirSortTime, waitAsync, waitForAsync } from './utils'
+import { syncReaddirSortTime, waitForAsync } from './utils'
 
 const altLogStrings = {
   gameCrash: '] Crash call stack:',
@@ -15,6 +15,7 @@ const altvPath = config.altvPath
 const altvArgs = [
   config.connectUrl ? `-connecturl altv://connect/${config.connectUrl}` : null,
   config.skipAltvUpdate ? '-noupdate' : null,
+  config.skipProcessConfirmation ? '-skipprocessconfirmation' : null,
 ]
 
 startAltv()
@@ -27,10 +28,8 @@ if (config.closeAltvOnExitScript) {
   })
 }
 
-async function programRestart (delay = config.restartGameDelay) {
-  console.log(`restart with delay ${delay}...`.cyan)
+async function programRestart () {
   await closeAltv()
-  await waitAsync(delay)
   startAltv()
 }
 
@@ -153,13 +152,10 @@ async function watchForRestart () {
   }
 
   let unwatched = false
-  /**
-   * @param {number} delay
-   */
-  const restart = (delay) => {
+  const restart = () => {
     // eslint-disable-next-line no-use-before-define
     stopWatchForRestart()
-    programRestart(delay)
+    programRestart()
   }
 
   const clientLogWatcher = new Tail(`${altvLogsPath}\\${logToWatch}`, { useWatchFile: true })
@@ -168,12 +164,12 @@ async function watchForRestart () {
 
       if (gameCrashed(data)) {
         console.log('game crash detected -> restart game'.yellow)
-        restart(config.restartOnGameCrashDelay)
+        restart()
       }
 
       if (clientDisconnected(data)) {
         console.log('client disconnected -> restart game'.yellow)
-        restart(config.restartGameDelay)
+        restart()
       }
     })
 
